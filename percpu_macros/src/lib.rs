@@ -52,13 +52,14 @@
 //!
 
 use proc_macro::TokenStream;
-use proc_macro2::Span;
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{Error, ItemStatic};
 
+#[cfg(not(feature = "custom-tp"))]
 #[cfg_attr(feature = "sp-naive", path = "naive.rs")]
 mod arch;
 
+#[allow(unused)]
 fn compiler_error(err: Error) -> TokenStream {
     err.to_compile_error().into()
 }
@@ -70,6 +71,22 @@ fn compiler_error(err: Error) -> TokenStream {
 /// See the documentation of the [percpu](https://docs.rs/percpu) crate for more details.
 #[proc_macro_attribute]
 pub fn def_percpu(attr: TokenStream, item: TokenStream) -> TokenStream {
+    def_percpu_impl(attr, item)
+}
+
+#[doc(hidden)]
+#[cfg(all(not(feature = "sp-naive"), not(feature = "custom-tp")))]
+#[proc_macro]
+pub fn percpu_symbol_offset(item: TokenStream) -> TokenStream {
+    let symbol = &quote::format_ident!("{}", item.to_string());
+    let offset = arch::gen_offset(symbol);
+    quote!({ #offset }).into()
+}
+
+#[cfg(not(feature = "custom-tp"))]
+fn def_percpu_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+    use proc_macro2::Span;
+
     if !attr.is_empty() {
         return compiler_error(Error::new(
             Span::call_site(),
@@ -251,11 +268,25 @@ pub fn def_percpu(attr: TokenStream, item: TokenStream) -> TokenStream {
     .into()
 }
 
-#[doc(hidden)]
-#[cfg(not(feature = "sp-naive"))]
-#[proc_macro]
-pub fn percpu_symbol_offset(item: TokenStream) -> TokenStream {
-    let symbol = &format_ident!("{}", item.to_string());
-    let offset = arch::gen_offset(symbol);
-    quote!({ #offset }).into()
+#[cfg(feature = "custom-tp")]
+fn def_percpu_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
+    use syn::parse_macro_input;
+
+    let ItemStatic {
+        attrs,
+        vis,
+        static_token,
+        mutability,
+        ident,
+        ty,
+        expr,
+        ..
+    } = parse_macro_input!(input as ItemStatic);
+
+    quote! {
+        #[unsafe(link_section = ".percpu")]
+        #(#attrs)*
+        #vis #static_token #mutability #ident : ::percpu::PerCpuData<#ty> = ::percpu::PerCpuData::new(#expr);
+    }
+    .into()
 }

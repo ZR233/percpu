@@ -24,7 +24,10 @@ preempt = []
 # ARM specific, whether to run at the EL2 privilege level.
 arm-el2 = []
 
+custom-tp = []
+
 [dependencies]
+cfg-if = "1.0"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = { version = "2.0", features = ["full"] }
