@@ -53,7 +53,7 @@ pub fn percpu_area_base(cpu_id: usize) -> usize {
 ///
 /// Returns the number of areas initialized. If this function has been called
 /// before, it does nothing and returns 0.
-pub fn init() -> usize {
+pub fn init(_cpu_count: usize) -> usize {
     // avoid re-initialization.
     if IS_INIT
         .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)

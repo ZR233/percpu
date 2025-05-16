@@ -1,17 +1,10 @@
 use core::{
     cell::UnsafeCell,
     fmt::{Debug, Display},
-    ptr::NonNull,
 };
 
 #[cfg(feature = "preempt")]
 use kernel_guard::NoPreempt;
-
-pub trait Impl {
-    fn percpu_base() -> NonNull<u8>;
-    fn set_cpu_local_ptr(ptr: *mut u8);
-    fn get_cpu_local_ptr() -> *mut u8;
-}
 
 #[repr(transparent)]
 pub struct PerCpuData<T> {
@@ -247,7 +240,7 @@ fn get_cpu_local_ptr() -> *mut u8 {
     unsafe { _percpu_get_cpu_local_ptr() }
 }
 
-pub fn init_data(cpu_count: usize) {
+pub fn init(cpu_count: usize) {
     unsafe {
         PERCPU_SIZE = percpu_section_size();
 

@@ -16,6 +16,8 @@ cfg_if::cfg_if! {
     }
 }
 
+use core::ptr::NonNull;
+
 pub use self::imp::*;
 pub use percpu_macros::def_percpu;
 
@@ -32,4 +34,10 @@ cfg_if::cfg_if! {
         #[def_percpu]
         pub static EXAMPLE_PERCPU_DATA: usize = 0;
     }
+}
+
+pub trait Impl {
+    fn percpu_base() -> NonNull<u8>;
+    fn set_cpu_local_ptr(ptr: *mut u8);
+    fn get_cpu_local_ptr() -> *mut u8;
 }
