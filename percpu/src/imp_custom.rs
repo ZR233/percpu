@@ -265,7 +265,7 @@ pub fn init_data(cpu_count: usize) {
         }
     }
 }
-pub fn init(cpu_idx: usize) {
+pub fn init_percpu_reg(cpu_idx: usize) {
     unsafe {
         let ptr = (percpu_base() + cpu_idx * percpu_size()) as *mut u8;
         _percpu_set_cpu_local_ptr(ptr);
