@@ -86,6 +86,7 @@ pub fn percpu_symbol_offset(item: TokenStream) -> TokenStream {
 #[cfg(not(feature = "custom-tp"))]
 fn def_percpu_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     use proc_macro2::Span;
+    use quote::format_ident;
 
     if !attr.is_empty() {
         return compiler_error(Error::new(
