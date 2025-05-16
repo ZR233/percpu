@@ -55,7 +55,6 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Error, ItemStatic};
 
-#[cfg(not(feature = "custom-tp"))]
 #[cfg_attr(feature = "sp-naive", path = "naive.rs")]
 mod arch;
 
@@ -75,7 +74,7 @@ pub fn def_percpu(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[doc(hidden)]
-#[cfg(all(not(feature = "sp-naive"), not(feature = "custom-tp")))]
+#[cfg(any(feature = "sp-naive", not(feature = "custom-tp")))]
 #[proc_macro]
 pub fn percpu_symbol_offset(item: TokenStream) -> TokenStream {
     let symbol = &quote::format_ident!("{}", item.to_string());
@@ -83,7 +82,7 @@ pub fn percpu_symbol_offset(item: TokenStream) -> TokenStream {
     quote!({ #offset }).into()
 }
 
-#[cfg(not(feature = "custom-tp"))]
+#[cfg(any(feature = "sp-naive", not(feature = "custom-tp")))]
 fn def_percpu_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     use proc_macro2::Span;
     use quote::format_ident;
@@ -269,7 +268,7 @@ fn def_percpu_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
     .into()
 }
 
-#[cfg(feature = "custom-tp")]
+#[cfg(all(feature = "custom-tp", not(feature = "sp-naive")))]
 fn def_percpu_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
     use syn::parse_macro_input;
 

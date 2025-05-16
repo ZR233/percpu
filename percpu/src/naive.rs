@@ -51,3 +51,8 @@ pub fn init_percpu_reg(_cpu_id: usize) {}
 pub fn init() -> usize {
     1
 }
+
+#[macro_export]
+macro_rules! impl_percpu {
+    ($impl:ty) => {};
+}
