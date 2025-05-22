@@ -45,14 +45,14 @@ fn test_percpu() {
     #[cfg(not(feature = "sp-naive"))]
     let base = {
         assert_eq!(init(4), 4);
-        unsafe { write_percpu_reg(percpu_area_base(0)) };
+
+        init_percpu_reg(0);
 
         let base = read_percpu_reg();
         println!("per-CPU area base = {:#x}", base);
         println!("per-CPU area size = {}", percpu_area_size());
         base
     };
-
     println!("bool offset: {:#x}", BOOL.offset());
     println!("u8 offset: {:#x}", U8.offset());
     println!("u16 offset: {:#x}", U16.offset());

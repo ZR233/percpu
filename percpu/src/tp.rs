@@ -7,7 +7,7 @@ pub fn read_percpu_reg() -> usize {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "x86_64")] {
                 tp = if cfg!(target_os = "linux") {
-                    SELF_PTR.read_current_raw()
+                    GS
                 } else if cfg!(target_os = "none") {
                     x86::msr::rdmsr(x86::msr::IA32_GS_BASE) as usize
                 } else {
@@ -41,14 +41,7 @@ pub unsafe fn write_percpu_reg(tp: usize) {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "x86_64")] {
                 if cfg!(target_os = "linux") {
-                    const ARCH_SET_GS: u32 = 0x1001;
-                    const SYS_ARCH_PRCTL: u32 = 158;
-                    core::arch::asm!(
-                        "syscall",
-                        in("eax") SYS_ARCH_PRCTL,
-                        in("edi") ARCH_SET_GS,
-                        in("rsi") tp,
-                    );
+                    GS = tp;
                 } else if cfg!(target_os = "none") {
                     x86::msr::wrmsr(x86::msr::IA32_GS_BASE, tp as u64);
                 } else {
@@ -77,3 +70,15 @@ use crate as percpu;
 #[no_mangle]
 #[percpu_macros::def_percpu]
 static SELF_PTR: usize = 0;
+
+#[cfg(target_os = "linux")]
+static mut GS: usize = 0;
+
+/// .
+/// # Safety
+///
+#[cfg(target_os = "linux")]
+#[no_mangle]
+pub unsafe extern "C" fn __get_gs() -> usize {
+    GS
+}

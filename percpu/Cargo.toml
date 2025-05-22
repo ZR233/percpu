@@ -24,7 +24,7 @@ preempt = ["percpu_macros/preempt", "dep:kernel_guard"]
 # ARM specific, whether to run at the EL2 privilege level.
 arm-el2 = ["percpu_macros/arm-el2"]
 
-custom-base = []
+custom-base = ["percpu_macros/custom-base"]
 
 [dependencies]
 cfg-if = "1.0"
@@ -36,3 +36,6 @@ x86 = "0.52"
 
 [target.'cfg(not(target_os = "none"))'.dependencies]
 spin = "0.9"
+
+
+[dev-dependencies]

@@ -296,24 +296,26 @@ pub fn percpu_area_base(cpu_idx: usize) -> usize {
 
 #[cfg(target_os = "linux")]
 mod _linux {
-    use core::alloc::Layout;
-    use std::alloc::alloc;
+    use std::sync::Mutex;
 
     use super::*;
 
+    static PERCPU_DATA: Mutex<Vec<u8>> = Mutex::new(Vec::new());
     static mut PERCPU_BASE: usize = 0;
 
-    #[no_mangle]
     pub fn percpu_base() -> usize {
         unsafe { PERCPU_BASE }
     }
 
     pub fn init(cpu_count: usize) {
         let size = cpu_count * percpu_section_size();
-        let data = unsafe { alloc(Layout::from_size_align_unchecked(size, 0x1000)) };
+        let mut g = PERCPU_DATA.lock().unwrap();
+        g.resize(size, 0);
 
         unsafe {
-            PERCPU_BASE = data as usize;
+            let base = g.as_slice().as_ptr() as usize;
+            PERCPU_BASE = base;
+            println!("alloc percpu data @{:#x}, size: {:#x}", base, size);
         }
     }
 }
