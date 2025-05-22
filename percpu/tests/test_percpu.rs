@@ -34,13 +34,17 @@ static STRUCT: Struct = Struct { foo: 0, bar: 0 };
 #[test]
 fn test_percpu() {
     println!("feature = \"sp-naive\": {}", cfg!(feature = "sp-naive"));
+    println!(
+        "feature = \"custom-base\": {}",
+        cfg!(feature = "custom-base")
+    );
 
     #[cfg(feature = "sp-naive")]
     let base = 0;
 
     #[cfg(not(feature = "sp-naive"))]
     let base = {
-        assert_eq!(init(), 4);
+        assert_eq!(init(4), 4);
         unsafe { write_percpu_reg(percpu_area_base(0)) };
 
         let base = read_percpu_reg();

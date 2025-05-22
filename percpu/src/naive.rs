@@ -48,6 +48,6 @@ pub fn init_percpu_reg(_cpu_id: usize) {}
 /// Returns the number of areas initialized.
 ///
 /// For "sp-naive" use it does nothing and returns `1`.
-pub fn init() -> usize {
+pub fn init(_cpu_count: usize) -> usize {
     1
 }
