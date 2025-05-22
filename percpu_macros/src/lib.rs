@@ -55,6 +55,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Error, ItemStatic};
 
+#[cfg(any(not(feature = "custom-base"), feature = "sp-naive"))]
 #[cfg_attr(feature = "sp-naive", path = "naive.rs")]
 mod arch;
 
