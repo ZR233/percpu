@@ -41,7 +41,7 @@ to access the corresponding field.
 static CPU_ID: usize = 0;
 
 // initialize per-CPU data areas.
-percpu::init(0);
+percpu::init(1);
 // set the thread pointer register to the per-CPU data area 0.
 percpu::init_percpu_reg(0);
 
