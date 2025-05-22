@@ -6,13 +6,18 @@ pub fn read_percpu_reg() -> usize {
     unsafe {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "x86_64")] {
-                tp = if cfg!(target_os = "linux") {
-                    GS
-                } else if cfg!(target_os = "none") {
-                    x86::msr::rdmsr(x86::msr::IA32_GS_BASE) as usize
-                } else {
+                #[cfg(target_os = "linux")]
+                {
+                    tp = GS;
+                }
+                #[cfg(target_os = "none")]
+                {
+                    tp = x86::msr::rdmsr(x86::msr::IA32_GS_BASE) as usize
+                }
+                #[cfg(all(not(target_os = "linux"), not(target_os = "none")))]
+                {
                     unimplemented!()
-                };
+                }
             } else if #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))] {
                 core::arch::asm!("mv {}, gp", out(reg) tp)
             } else if #[cfg(all(target_arch = "aarch64", not(feature = "arm-el2")))] {
@@ -40,11 +45,16 @@ pub unsafe fn write_percpu_reg(tp: usize) {
     unsafe {
         cfg_if::cfg_if! {
             if #[cfg(target_arch = "x86_64")] {
-                if cfg!(target_os = "linux") {
+                #[cfg(target_os = "linux")]
+                {
                     GS = tp;
-                } else if cfg!(target_os = "none") {
+                }
+                #[cfg(target_os = "none")]
+                {
                     x86::msr::wrmsr(x86::msr::IA32_GS_BASE, tp as u64);
-                } else {
+                }
+                #[cfg(all(not(target_os = "linux"), not(target_os = "none")))]
+                {
                     unimplemented!()
                 }
                 SELF_PTR.write_current_raw(tp);
